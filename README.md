@@ -10,4 +10,5 @@ go run *.go
 ### To Do's:
 - Add goroutines
 - Clean up
+- Possible use of other modules to simplify logic?
 - Expand...
