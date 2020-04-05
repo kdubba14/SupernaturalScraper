@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	// parsers "./parsers"
 )
 
 const SN_WIKI string = "http://www.supernaturalwiki.com"
@@ -28,7 +27,6 @@ func main() {
 		fmt.Printf("========ERROR READING: \n%s\n", err)
 		os.Exit(1)
 	}
-	// fmt.Printf("---------------PAGE---------->\n%s\n", string(dirPage))
 
 	var directory string = string(dirPage)
 	var links []string
@@ -67,18 +65,29 @@ func main() {
 
 	fmt.Println("=======================")
 	var lines [][]string
+	ch := make(chan [][]string)
+	cl := &http.Client{
+		Transport: &http.Transport{MaxConnsPerHost: 50},
+	}
 
 	for _, s := range filteredLinks {
-		// if i == 0 {
-		// transcriptPage := parsers.GetScript(fmt.Sprintf("%v%v", SN_WIKI, s))
-		transcriptPage := GetScript(fmt.Sprintf("%v%v", SN_WIKI, s))
+		go func(str string) {
+			fmt.Printf("Getting Script - %v%v\n", SN_WIKI, str)
+			transcriptPage := GetScript(cl, fmt.Sprintf("%v%v", SN_WIKI, str))
 
-		scriptTags := GetLines(transcriptPage)
+			fmt.Printf("Getting Lines - %v%v\n", SN_WIKI, str)
+			scriptTags := GetLines(transcriptPage)
 
-		lineObj := ToObjs(scriptTags)
+			fmt.Printf("Cleaning Data - %v%v\n", SN_WIKI, str)
+			lineArr := ToArrs(scriptTags)
 
-		lines = append(lines, lineObj...)
-		// }
+			ch <- lineArr
+		}(s)
+	}
+
+	for range filteredLinks {
+		lines = append(lines, <-ch...)
+		fmt.Println("Appending Lines...")
 	}
 
 	fmt.Println("=================")

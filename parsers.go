@@ -14,8 +14,8 @@ type ScriptLine struct {
 }
 
 // GetScript getting the page with script
-func GetScript(r string) string {
-	f, err := http.Get(r)
+func GetScript( /*pc *chan string,*/ cl *http.Client, r string) string {
+	f, err := cl.Get(r)
 	if err != nil {
 		fmt.Println("========ERROR FETCHING", err)
 		os.Exit(1)
@@ -28,11 +28,13 @@ func GetScript(r string) string {
 		os.Exit(1)
 	}
 
+	// *pc <- string(transcriptPage)
+
 	return string(transcriptPage)
 }
 
 // GetLines will pull all script lines from a script page
-func GetLines(s string) []string {
+func GetLines( /*pl *chan []string,*/ s string) []string {
 	var lines []string
 	tracking := false
 	trackingStart := 0
@@ -65,10 +67,12 @@ func GetLines(s string) []string {
 		}
 	}
 
+	// *pl <- filteredLines
+
 	return filteredLines
 }
 
-func ToObjs(lines []string) [][]string {
+func ToArrs( /*pl *chan [][]string,*/ lines []string) [][]string {
 	var r [][]string
 
 	for _, l := range lines {
@@ -91,6 +95,8 @@ func ToObjs(lines []string) [][]string {
 	// 		ret = append(ret, l)
 	// 	}
 	// }
+
+	// *pl <- r
 
 	return r
 }
